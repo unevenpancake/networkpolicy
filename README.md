@@ -1,3 +1,9 @@
+# Network Policy in Openshift 4
+https://docs.openshift.com/container-platform/4.6/networking/network_policy/multitenant-network-policy.html
+A good way to think about NetworkPolicy is like a network layer firewall.  It prevents pods from communicating with each other and is available by default for cluster set up with "NetworkPolicy" as the network type.  NetworkPolicy is the default network type and is likely available.  Like a network firewall, NetworkPolicies can control traffic based on source and port, but unlike a network firewall it can identify pods based on names, labels, or attributes as well as control Layer 3 and Layer 4 traffic between pods on the same subnet.
+
+Additionally, this access can be made available to the end users to enable within their specific projects while allow administrators control over cluster wide NetworkPolicies making it a native multi-tenant solution with no additional software required.
+
 ## Make sure auto-completion for the OC command is enabled so that pod names are easy to access (pods have randomly generated endings)
 ```
 source <(oc completion bash)
