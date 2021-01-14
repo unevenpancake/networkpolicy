@@ -92,3 +92,81 @@ oc rsh diffspace-1-<guid> curl 10.8.0.3:8080
 ```
 oc rsh samespace-1-<guid> curl 10.8.0.3:8080
 ```
+
+## Allow access from diffspace-1 to samespace-2
+```
+vim allow-specific.yaml
+```
+```
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-specific
+spec:
+  podSelector:
+    matchLabels:
+      deployment: samespace-2
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: diffspace-label
+        podSelector:
+          matchLabels:
+            deployment: diffspace-1
+      ports:
+      - port: 8080
+        protocol: TCP
+```
+```
+oc create -n samespace-f allow-specific.yaml
+```
+## One of the requirements is a namespace label
+```
+oc label namespace diffspace name=diffspace-label
+```
+## Check the route to see if you are able to access it (it should NOT be able to)
+```
+curl -s samespace-2-samespace.apps.ocp4.disconnect.blue
+```
+
+## Check if a different namespace to samespace-b (it should be able to)
+```
+oc rsh diffspace-1-<guid> curl 10.8.0.3:8080
+```
+
+## Check if the same namespace can reach samespace-b (it should NOT be able to)
+```
+oc rsh samespace-1-<guid> curl 10.8.0.3:8080
+```
+## Allow access from route ingress controllers
+```
+vim allow-from-openshift-ingress.yaml
+```
+```
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-from-openshift-ingress
+spec:
+  podSelector: {}
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          network.openshift.io/policy-group: ingress
+```
+```
+oc create -n samespace -f allow-from-openshift.ingress.yaml
+```
+
+## Validate whether HostNetwork endpoint publishing strategy is used and label default namespace if so
+```
+oc get --namespace openshift-ingress-operator ingresscontrollers/default --output jsonpath='{.status.endpointPublishingStrategy.type}'
+```
+```
+oc label namespace default 'network.openshift.io/policy-group=ingress'
+```
+```
+oc describe namespace default
+```
