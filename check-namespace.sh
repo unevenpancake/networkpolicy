@@ -9,4 +9,4 @@ oc get route -o custom-columns="ROUTE NAME:.metadata.name,HOSTNAME:.spec.host,PO
 
 echo "PROJECT: diffspace"
 echo
-oc get pods -o custom-columns="POD NAME:.metadata.name" -n diffspace
+oc get pods -o custom-columns="POD NAME:.metadata.name,IP ADDRESS:.status.podIP" -n diffspace
