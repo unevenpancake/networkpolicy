@@ -11,14 +11,14 @@ oc new-project diffspace
 
 ## Create three sample apps
 ```
-oc new-app -n samespace --name samespaceA --docker-image quay.io/redhattraining/hello-world-nginx:v1.0
-oc new-app -n samespace --name samespaceB --docker-image quay.io/redhattraining/hello-world-nginx:v1.0
-oc new-app -n diffspace --name diffspaceB --docker-image quay.io/redhattraining/hello-world-nginx:v1.0
+oc new-app -n samespace --name samespace-1 --docker-image quay.io/redhattraining/hello-world-nginx:v1.0
+oc new-app -n samespace --name samespace-2 --docker-image quay.io/redhattraining/hello-world-nginx:v1.0
+oc new-app -n diffspace --name diffspace-1 --docker-image quay.io/redhattraining/hello-world-nginx:v1.0
 ```
 
 ## Add a route to samespace B
 ```
-oc expose service samespaceB
+oc expose service samespace-2
 ```
 
 ## Check the two projects
@@ -40,17 +40,17 @@ oc get route -o custom-columns="ROUTE NAME:.metadata.name,HOSTNAME:.spec.host,PO
 
 echo "PROJECT: diffspace"
 echo
-oc get pods -o custom-columns="POD NAME:.metadata.name" -n diffspace
+oc get pods -o custom-columns="POD NAME:.metadata.name,IP ADDRESS:.status.podIP" -n diffspace
 ```
 
 ## Verify samespace A can reach the pod IP and the service IP of samespace B (make sure you get the real IP from the above commands and use autocompletion to save typing)
 ```
-oc rsh samespaceA-<guid> curl 10.8.0.3:8080
-oc rsh samespaceA-<guid> curl 172.30.0.3:8080
+oc rsh samespace-1-<guid> curl 10.8.0.3:8080
+oc rsh samespace-1-<guid> curl 172.30.0.3:8080
 ```
 
 ## Check the route for good measure (this can be done from a machine outside your cluster)
 ```
-curl -s samespaceb-samespace.apps.ocp4.disconnect.blue
+curl -s samespace-2-samespace.apps.ocp4.disconnect.blue
 ```
 
