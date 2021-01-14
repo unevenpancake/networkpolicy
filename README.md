@@ -178,3 +178,6 @@ oc label namespace default 'network.openshift.io/policy-group=ingress'
 ```
 oc describe namespace default
 ```
+
+## Bonus: Default Network Policy for cluster
+https://docs.openshift.com/container-platform/4.6/networking/network_policy/default-network-policy.html#default-network-policy
