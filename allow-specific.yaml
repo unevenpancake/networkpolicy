@@ -1,0 +1,19 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-specific
+spec:
+  podSelector:
+    matchLabels:
+      deployment: samespace-2
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: diffspace-label
+        podSelector:
+          matchLabels:
+            deployment: diffspace-1
+      ports:
+      - port: 8080
+        protocol: TCP
