@@ -52,3 +52,43 @@ oc rsh samespace-1-<guid> curl 172.30.0.3:8080
 ## Check the route for good measure (this can be done from a machine outside your cluster)
 ```
 curl -s samespace-2-samespace.apps.ocp4.disconnect.blue
+```
+
+## Demonstrate denying all traffic (any policy changes default traffic from accept to deny [blacklist to whitelist])
+```
+oc get networkpolicy
+```
+```
+vim deny-all.yaml
+```
+```
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: deny-all
+spec:
+  podSelector: {}
+```
+
+## Apply network policy
+```
+oc create -f deny-all.yaml
+```
+```
+oc get networkpolicy
+```
+
+## Check the route to see if you are able to access it
+```
+curl -s samespace-2-samespace.apps.ocp4.disconnect.blue
+```
+
+## Check if a different namespace to samespace-b 
+```
+oc rsh diffspace-1-<guid> curl 10.8.0.3:8080
+```
+
+## Check if the same namespace can reach samespace-b
+```
+oc rsh samespace-1-<guid> curl 10.8.0.3:8080
+```
