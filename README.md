@@ -1,39 +1,41 @@
 # Network Policy in Openshift 4
 https://docs.openshift.com/container-platform/4.6/networking/network_policy/multitenant-network-policy.html
+
+## Synopsis
 A good way to think about NetworkPolicy is like a network layer firewall.  It prevents pods from communicating with each other and is available by default for cluster set up with "NetworkPolicy" as the network type.  NetworkPolicy is the default network type and is likely available.  Like a network firewall, NetworkPolicies can control traffic based on source and port, but unlike a network firewall it can identify pods based on names, labels, or attributes as well as control Layer 3 and Layer 4 traffic between pods on the same subnet.
 
 Additionally, this access can be made available to the end users to enable within their specific projects while allow administrators control over cluster wide NetworkPolicies making it a native multi-tenant solution with no additional software required.
 
-## Make sure auto-completion for the OC command is enabled so that pod names are easy to access (pods have randomly generated endings)
+### Make sure auto-completion for the OC command is enabled so that pod names are easy to access (pods have randomly generated endings)
 ```
 source <(oc completion bash)
 ```
 
-## Create two projects
+### Create two projects
 ```
 oc new-project samespace
 oc new-project diffspace
 ```
 
-## Create three sample apps
+### Create three sample apps
 ```
 oc new-app -n samespace --name samespace-1 --docker-image quay.io/redhattraining/hello-world-nginx:v1.0
 oc new-app -n samespace --name samespace-2 --docker-image quay.io/redhattraining/hello-world-nginx:v1.0
 oc new-app -n diffspace --name diffspace-1 --docker-image quay.io/redhattraining/hello-world-nginx:v1.0
 ```
 
-## Add a route to samespace B
+### Add a route to samespace B
 ```
 oc expose service samespace-2
 ```
 
-## Check the two projects
+### Check the two projects
 ```
 oc status
 oc get all
 ```
 
-## Make a little shell script if it would be helpful to quickly get the IP addresses 
+### Make a little shell script if it would be helpful to quickly get the IP addresses 
 ```
 #!/usr/bin/bash
 echo "PROJECT: samespace"
@@ -49,18 +51,18 @@ echo
 oc get pods -o custom-columns="POD NAME:.metadata.name,IP ADDRESS:.status.podIP" -n diffspace
 ```
 
-## Verify samespace A can reach the pod IP and the service IP of samespace B (make sure you get the real IP from the above commands and use autocompletion to save typing)
+### Verify samespace A can reach the pod IP and the service IP of samespace B (make sure you get the real IP from the above commands and use autocompletion to save typing)
 ```
 oc rsh samespace-1-<guid> curl 10.8.0.3:8080
 oc rsh samespace-1-<guid> curl 172.30.0.3:8080
 ```
 
-## Check the route for good measure (this can be done from a machine outside your cluster)
+### Check the route for good measure (this can be done from a machine outside your cluster)
 ```
 curl -s samespace-2-samespace.apps.ocp4.disconnect.blue
 ```
 
-## Demonstrate denying all traffic (any policy changes default traffic from accept to deny [blacklist to whitelist])
+### Demonstrate denying all traffic (any policy changes default traffic from accept to deny [blacklist to whitelist])
 ```
 oc get networkpolicy
 ```
@@ -76,7 +78,7 @@ spec:
   podSelector: {}
 ```
 
-## Apply network policy
+### Apply network policy
 ```
 oc create -f deny-all.yaml
 ```
@@ -84,22 +86,22 @@ oc create -f deny-all.yaml
 oc get networkpolicy
 ```
 
-## Check the route to see if you are able to access it
+### Check the route to see if you are able to access it
 ```
 curl -s samespace-2-samespace.apps.ocp4.disconnect.blue
 ```
 
-## Check if a different namespace to samespace-b 
+### Check if a different namespace to samespace-b 
 ```
 oc rsh diffspace-1-<guid> curl 10.8.0.3:8080
 ```
 
-## Check if the same namespace can reach samespace-b
+### Check if the same namespace can reach samespace-b
 ```
 oc rsh samespace-1-<guid> curl 10.8.0.3:8080
 ```
 
-## Allow access from diffspace-1 to samespace-2
+### Allow access from diffspace-1 to samespace-2
 ```
 vim allow-specific.yaml
 ```
@@ -127,25 +129,25 @@ spec:
 ```
 oc create -n samespace-f allow-specific.yaml
 ```
-## One of the requirements is a namespace label
+### One of the requirements is a namespace label
 ```
 oc label namespace diffspace name=diffspace-label
 ```
-## Check the route to see if you are able to access it (it should NOT be able to)
+### Check the route to see if you are able to access it (it should NOT be able to)
 ```
 curl -s samespace-2-samespace.apps.ocp4.disconnect.blue
 ```
 
-## Check if a different namespace to samespace-b (it should be able to)
+### Check if a different namespace to samespace-b (it should be able to)
 ```
 oc rsh diffspace-1-<guid> curl 10.8.0.3:8080
 ```
 
-## Check if the same namespace can reach samespace-b (it should NOT be able to)
+### Check if the same namespace can reach samespace-b (it should NOT be able to)
 ```
 oc rsh samespace-1-<guid> curl 10.8.0.3:8080
 ```
-## Allow access from route ingress controllers
+### Allow access from route ingress controllers
 ```
 vim allow-from-openshift-ingress.yaml
 ```
@@ -166,7 +168,7 @@ spec:
 oc create -n samespace -f allow-from-openshift.ingress.yaml
 ```
 
-## Validate whether HostNetwork endpoint publishing strategy is used and label default namespace if so
+### Validate whether HostNetwork endpoint publishing strategy is used and label default namespace if so
 ```
 oc get --namespace openshift-ingress-operator ingresscontrollers/default --output jsonpath='{.status.endpointPublishingStrategy.type}'
 ```
